@@ -11,21 +11,22 @@ app.use(express.json());
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
+  const systemPrompt = req.body.systemPrompt;
   if (!userMessage) {
     return res.status(400).json({ error: 'Message is required.' });
   }
 
   try {
+    const messages = [];
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+    messages.push({ role: 'user', content: userMessage });
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'user',
-            content: userMessage,
-          },
-        ],
+        model: 'openai/gpt-4-1106-preview',
+        messages,
       },
       {
         headers: {
