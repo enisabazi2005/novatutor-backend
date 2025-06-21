@@ -47,7 +47,7 @@ app.post('/chat', async (req, res) => {
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'openai/gpt-3.5-turbo-0613',
+        model: process.env.AI_MODEL,
         messages,
       },
       {
