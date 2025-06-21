@@ -2,12 +2,16 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 require('dotenv').config();
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
@@ -57,6 +61,27 @@ app.post('/chat', async (req, res) => {
   } catch (error) {
     console.error(error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to get AI response.' });
+  }
+});
+
+// Upload media endpoint (PDF or image)
+app.post('/upload-media', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided.' });
+    const mimetype = req.file.mimetype;
+    if (mimetype === 'application/pdf') {
+      // Extract text from PDF
+      const data = await pdfParse(req.file.buffer);
+      return res.json({ text: data.text });
+    } else if (mimetype.startsWith('image/')) {
+      // For now, just return error for images
+      return res.status(400).json({ error: 'Image upload not supported yet.' });
+    } else {
+      return res.status(400).json({ error: 'Unsupported file type.' });
+    }
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ error: 'Failed to process file.' });
   }
 });
 
