@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const Tesseract = require('tesseract.js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -74,8 +75,9 @@ app.post('/upload-media', upload.single('file'), async (req, res) => {
       const data = await pdfParse(req.file.buffer);
       return res.json({ text: data.text });
     } else if (mimetype.startsWith('image/')) {
-      // For now, just return error for images
-      return res.status(400).json({ error: 'Image upload not supported yet.' });
+      // Extract text from image using tesseract.js
+      const { data: { text } } = await Tesseract.recognize(req.file.buffer, 'eng');
+      return res.json({ text });
     } else {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
