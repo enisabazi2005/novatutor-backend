@@ -38,6 +38,14 @@ app.post('/chat', async (req, res) => {
     });
   }
 
+  // Custom response for image reading questions (more robust)
+  const imageReadRegex = /(can|do) you (see|read|analyze|understand)[^a-zA-Z]*(an? )?images?/i;
+  if (imageReadRegex.test(userMessage.toLowerCase())) {
+    return res.json({
+      message: "Yes, I can read images for text, numbers, barcodes, and code, but I cannot see or interpret portraits, faces, or general visual content."
+    });
+  }
+
   try {
     const messages = [];
     if (systemPrompt) {
