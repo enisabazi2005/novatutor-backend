@@ -21,7 +21,6 @@ app.post('/chat', async (req, res) => {
     return res.status(400).json({ error: 'Message is required.' });
   }
 
-  // Improved custom response for creator/developer questions
   const normalized = userMessage.trim().toLowerCase().replace(/[^a-z0-9 ]/gi, '');
   const creatorRegex = /who (created|developed|made|built)[a-z ]*(you|this|novatutor)/i;
   if (creatorRegex.test(normalized)) {
@@ -30,7 +29,6 @@ app.post('/chat', async (req, res) => {
     });
   }
 
-  // Custom response for learning more about Enis
   const learnMoreRegex = /^(yes|i (want|would like) to learn more about enis|tell me more about enis|more about enis|who is enis|learn more about enis)/i;
   if (learnMoreRegex.test(normalized)) {
     return res.json({
@@ -38,7 +36,6 @@ app.post('/chat', async (req, res) => {
     });
   }
 
-  // Custom response for image reading questions (more robust)
   const imageReadRegex = /(can|do) you (see|read|analyze|understand)[^a-zA-Z]*(an? )?images?/i;
   if (imageReadRegex.test(userMessage.toLowerCase())) {
     return res.json({
@@ -73,17 +70,14 @@ app.post('/chat', async (req, res) => {
   }
 });
 
-// Upload media endpoint (PDF or image)
 app.post('/upload-media', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file provided.' });
     const mimetype = req.file.mimetype;
     if (mimetype === 'application/pdf') {
-      // Extract text from PDF
       const data = await pdfParse(req.file.buffer);
       return res.json({ text: data.text });
     } else if (mimetype.startsWith('image/')) {
-      // Extract text from image using tesseract.js
       const { data: { text } } = await Tesseract.recognize(req.file.buffer, 'eng');
       return res.json({ text });
     } else {
